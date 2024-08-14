@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pantry Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+
+
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    
+
+    <nav class="navbar navbar-dark bg-dark navbar-expand-md">
+        <!-- Top Left Text -->
+        <a href="#home" class="fw.bold text-light text-decoration-none">
+            <div class="navbar-brand ps-5">
+                The Pantry Tracker 
+            </div>
+            
+            <div class="small fw.bold text-light ps-5">
+                -Hou Wai
+            </div>
+        </a>
+
+        <!-- Navigation Bar Toggler -->
+         <button class="navbar-toggler me-5" type="button" data-bs-toggle="collapse" 
+            data-bs-target="#navbarToggleExternalContent" 
+            aria-controls="navbarToggleExternalContent" aria-expanded="false" 
+            aria-label="Toggle navigation">
+
+            <span class="navbar-toggler-icon">
+                
+            </span>
+         </button>
+
+         <!-- Navigation Bar (Pre-Toggle) -->
+          <div class="collapse navbar-collapse justify-content-end align-items-center pe-5" id="main-nav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                  <a class="nav-link active" href="home.html">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="index.html">Tracker</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="contact.html">Contact Me!</a>
+                </li>
+        </div>
+    </nav>
+
+    
+    
+    <section id="pantry-list">
+        <div class="container-fluid container-lg">
+            <div class="row">
+                <h1 class="display-4 mx-5 my-5">List of Items:</h1>
+                
+                <div class="row pb-2">
+                    <!-- Item input -->
+                    <div class="col-8">
+                        <input type="text" id="itemInput" class="form-control text-center fs-10 fw-bold" placeholder="Add a new item">
+                    </div>
+                
+                    <!-- Quantity input -->
+                    <div class="col-2">
+                        <input type="number" id="quanityInput" class="form-control text-center fw-bold" placeholder="Quantity">
+                    </div>
+                
+                    <!-- Add button -->
+                    <div class="col-1" >
+                        <button type="button" id="addItem" class="btn btn-dark w-100">Add</button>
+                    </div>
+                    
+                    <!-- Update button -->
+                    <div class="col-1" >
+                        <button type="button" id="updateItem" class="btn btn-secondary w-100">Update</button>
+                    </div>
+                </div>
+                
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Table for displaying items -->
+                    <table class="table table-striped text-center">
+                        <thead class="table-dark">
+                            
+                            <th class="col-8">
+                                Items
+                            </th>
+                            <th class="col-4">
+                                Quanity 
+                            </th>
+
+                            <!-- Auto Created Rows -->
+                            <tbody id="tbody1" class="ps-3">
+
+                            </tbody>
+                        </thead>
+                        
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    
+    
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+      
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyBFbyj0gQ-56KZp_qly5BlfEVLYYN4Rr4Q",
+          authDomain: "pantry-tracker-b097d.firebaseapp.com",
+          projectId: "pantry-tracker-b097d",
+          storageBucket: "pantry-tracker-b097d.appspot.com",
+          messagingSenderId: "835042177266",
+          appId: "1:835042177266:web:ca42720f9ea9b573e1206b"
+        };
+      
+        const app = initializeApp(firebaseConfig);
+
+        import {getDatabase, set, get, update, remove, ref, child, onValue}
+        from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js"
+        
+        const db = getDatabase();
+
+        var itemInput = document.querySelector("#itemInput");
+        var quantityInput = document.querySelector("#quanityInput");
+
+        var addItemBtn = document.querySelector("#addItem");
+        var updateItemBtn = document.querySelector("#updateItem");
+        var removeItemBtn = document.querySelector("#removeItem")
+
+        const tbody = document.querySelector("#tbody1");
+
+        function AddItem() {
+            var itemName = itemInput.value.trim();
+            var itemQuantity = quantityInput.value.trim();
+
+            if (itemName && itemQuantity) {
+                set(ref(db, "Items/" + itemName), {
+                    Item: itemName,
+                    Quantity: itemQuantity
+                })
+                .then(() => {
+                    itemInput.value = "";
+                    quantityInput.value = "";
+                })
+                .catch((error) => {
+                    alert(error);
+                });
+            } else {
+                alert("Please fill out both fields.");
+            }
+        }
+
+        // Function to add item to the table
+        function addItemToTable(item, quantity) {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${item}</td>
+                <td>${quantity}</td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm ms" style="margin-left: -100px">
+                        Remove
+                    </button>
+                </td>
+                
+            `;
+            tbody.appendChild(row);
+
+            row.querySelector('button').addEventListener('click', () => {
+                RemoveItem(item, quantity);
+            }); 
+        }
+
+        // Watch for changes
+        const itemsRef = ref(db, "Items/");
+        onValue(itemsRef, (snapshot) => {
+            tbody.innerHTML = ""; // Clear the table first
+            snapshot.forEach((childSnapshot) => {
+                const itemData = childSnapshot.val();
+                addItemToTable(itemData.Item, itemData.Quantity);
+            });
+        });
+
+        function UpdateItem() {
+            
+            var itemName = itemInput.value.trim();
+            var itemQuantity = quantityInput.value.trim();
+
+            if (itemName && itemQuantity) {
+                    update(ref(db, "Items/" + itemName), {
+                    Item: itemName,
+                    Quantity: itemQuantity
+                })
+                .then(() => {
+                    itemInput.value = "";
+                    quantityInput.value = "";
+                })
+                .catch((error) => {
+                    alert(error);
+                });
+            } else {
+                alert("Please fill out both fields.");
+            }
+        }
+
+        function RemoveItem(item, quantity) {
+            
+            var newQuantity = quantity - 1
+
+            if (newQuantity != 0) {
+                update(ref(db, "Items/" + item), {
+                    Item: item,
+                    Quantity: newQuantity
+                })
+            } else {
+                remove(ref(db, "Items/" + item))
+            }
+        }
+
+        addItemBtn.addEventListener('click', AddItem);
+        updateItemBtn.addEventListener('click', UpdateItem);
+        removeItemBtn.addEventListener('click', RemoveItem);
+
+    </script>
+
+    
+</body>
+</html>
